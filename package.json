@@ -1,0 +1,41 @@
+{
+  "name": "drizzle-select-utils",
+  "version": "3.5.0",
+  "description": "Reusable selectOnly and selectExcept utilities for Drizzle ORM and Postgres",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "drizzle",
+    "orm",
+    "select",
+    "typescript",
+    "utils"
+  ],
+  "author": "Marian Pidchashyi",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^24.0.2",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.2",
+    "postgres": "^3.4.7"
+  }
+}
