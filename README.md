@@ -191,4 +191,4 @@ Made with 💡 by [Marian Pidchashyi](https://github.com/Marian1309)
 
 ## 📄 License
 
-MIT © [Marian Pidchashyi](https://github.com/Marian1309/drizzle-select-utils/LICENCE)
+MIT © [LICENCE]([https://github.com/Marian1309/drizzle-select-utils/LICENCE](https://github.com/Marian1309/drizzle-select-utils/blob/main/LICENSE))
