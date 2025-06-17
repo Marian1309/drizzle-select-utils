@@ -28,6 +28,10 @@
     "typescript",
     "utils"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Marian1309/drizzle-select-utils"
+  },
   "author": "Marian Pidchashyi",
   "license": "MIT",
   "devDependencies": {

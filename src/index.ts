@@ -1,60 +1,19 @@
 import type { InferSelectModel, SQL } from "drizzle-orm";
-import { and, sql, count } from "drizzle-orm";
+import { and, count } from "drizzle-orm";
 import type { PgTable } from "drizzle-orm/pg-core";
 
-const toSnakeCase = (str: string): string =>
-  str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+import validateFields from "./utils/validate-fields";
 
-const validateFields = <T extends PgTable>(
-  table: T,
-  fields: (keyof InferSelectModel<T>)[],
-  operation: "select" | "exclude" = "select"
-): void => {
-  const duplicates = fields.filter(
-    (field, index) => fields.indexOf(field) !== index
-  );
-  if (duplicates.length > 0) {
-    throw new Error(
-      `Duplicate fields found in ${operation} operation: ${duplicates.join(
-        ", "
-      )}`
-    );
-  }
-
-  const invalidFields = fields.filter(
-    (field) => !(field in table) || field === "_"
-  );
-  if (invalidFields.length > 0) {
-    throw new Error(
-      `Invalid fields for table: ${invalidFields.join(", ")}. ` +
-        `Available fields: ${Object.keys(table)
-          .filter((k) => k !== "_")
-          .join(", ")}`
-    );
-  }
-};
-
-interface QueryOptions<T extends PgTable> {
+type QueryOptions<T extends PgTable> = {
   where?: SQL<unknown> | SQL<unknown>[];
   pagination?: {
     limit?: number;
     offset?: number;
   };
   orderBy?: SQL<unknown> | SQL<unknown>[];
-}
+};
 
-// Extract only selected keys from InferSelectModel
-type PickFields<
-  TTable extends PgTable,
-  TKeys extends keyof InferSelectModel<TTable>
-> = Pick<InferSelectModel<TTable>, TKeys>;
-
-type OmitFields<
-  TTable extends PgTable,
-  TKeys extends keyof InferSelectModel<TTable>
-> = Omit<InferSelectModel<TTable>, TKeys>;
-
-export const createSelectorUtils = (database: any) => {
+const createSelectorUtils = (database: any) => {
   const selectOnly = async <
     TTable extends PgTable,
     TFields extends Readonly<(keyof InferSelectModel<TTable>)[]>
@@ -194,3 +153,5 @@ export const createSelectorUtils = (database: any) => {
 
   return { selectOnly, selectExcept, getCount };
 };
+
+export default createSelectorUtils;
