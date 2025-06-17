@@ -11,6 +11,7 @@ type QueryOptions<T extends PgTable> = {
     offset?: number;
   };
   orderBy?: SQL<unknown> | SQL<unknown>[];
+  groupBy?: SQL<unknown> | SQL<unknown>[];
 };
 
 const createSelectorUtils = (database: any) => {
@@ -51,6 +52,13 @@ const createSelectorUtils = (database: any) => {
       if (validConditions.length > 0) {
         query = query.where(and(...validConditions));
       }
+    }
+
+    if (options?.groupBy) {
+      const groupByExpressions: SQL<unknown>[] = Array.isArray(options.groupBy)
+        ? options.groupBy
+        : [options.groupBy];
+      query = query.groupBy(...groupByExpressions);
     }
 
     if (options?.orderBy) {
@@ -106,6 +114,13 @@ const createSelectorUtils = (database: any) => {
       if (validConditions.length > 0) {
         query = query.where(and(...validConditions));
       }
+    }
+
+    if (options?.groupBy) {
+      const groupByExpressions: SQL<unknown>[] = Array.isArray(options.groupBy)
+        ? options.groupBy
+        : [options.groupBy];
+      query = query.groupBy(...groupByExpressions);
     }
 
     if (options?.orderBy) {

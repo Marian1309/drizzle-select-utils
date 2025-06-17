@@ -1,7 +1,7 @@
 {
   "name": "drizzle-select-utils",
-  "version": "3.5.0",
-  "description": "Reusable selectOnly and selectExcept utilities for Drizzle ORM and Postgres",
+  "version": "3.6.0",
+  "description": "Reusable utilities for convenient extraction of fields using Drizzle ORM and Postgres",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",

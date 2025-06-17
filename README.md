@@ -1,8 +1,8 @@
-# @pidchashyi/drizzle-select-utils
+# `@pidchashyi/drizzle-select-utils`
 
-> 🧩 Type-safe field selection utilities for Drizzle ORM — `selectOnly`, `selectExcept`, and `getCount`.
+> 🧩 Type-safe field selection utilities for [Drizzle ORM](https://orm.drizzle.team) — `selectOnly`, `selectExcept`, and `getCount`.
 
-Enhance your query-building experience with clear, validated utilities that help you focus only on the fields you need — with optional filters, ordering, and pagination. Fully type-safe, flexible, and compatible with `drizzle-orm`.
+Enhance your query-building experience with clear, validated utilities that help you focus only on the fields you need — with optional filters, ordering, grouping, and pagination. Fully type-safe, flexible, and Drizzle-compatible.
 
 ---
 
@@ -27,15 +27,15 @@ export const db = drizzle(queryClient);
 
 ```ts
 // @/utils/selector-utils.ts
-import { createSelectorUtils } from "drizzle-select-utils";
-import { db } from "@/db";
+import createSelectorUtils from "@pidchashyi/drizzle-select-utils";
+import { db } from "@/config/db";
 
 export const { selectOnly, selectExcept, getCount } = createSelectorUtils(db);
 ```
 
 ---
 
-## 🧩 Table Example
+## 🧩 Example Table
 
 ```ts
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
@@ -65,7 +65,7 @@ export const users = pgTable("user", {
 
 ## ✅ Usage: `selectOnly`
 
-Select only the fields you need from a table.
+Select **only** the fields you need from a table.
 
 ```ts
 import { eq } from "drizzle-orm";
@@ -81,7 +81,7 @@ const users = await selectOnly(usersTable, ["id", "email"], {
 
 ## 🚫 Usage: `selectExcept`
 
-Omit sensitive or unneeded fields easily.
+Omit unwanted or sensitive fields easily.
 
 ```ts
 const users = await selectExcept(usersTable, ["passwordHash", "emailVerified"]);
@@ -91,11 +91,13 @@ const users = await selectExcept(usersTable, ["passwordHash", "emailVerified"]);
 
 ## 🔢 Usage: `getCount`
 
-Get a count of rows matching conditions.
+Count rows matching the given conditions.
 
 ```ts
+import { eq } from "drizzle-orm";
+
 const count = await getCount(usersTable, {
-  where: [eq(usersTable.active, true)],
+  where: eq(usersTable.emailVerified, null),
 });
 ```
 
@@ -105,59 +107,66 @@ const count = await getCount(usersTable, {
 
 ### `createSelectorUtils(database)`
 
-Initializes and returns:
+Initializes the utility functions.
 
-- `selectOnly`
-- `selectExcept`
-- `getCount`
+#### Returns:
+
+- `selectOnly(...)`
+- `selectExcept(...)`
+- `getCount(...)`
 
 ---
 
 ### `selectOnly(table, includeFields, options?)`
 
-Returns records with **only** the specified fields.
+Returns records containing **only** the specified fields.
 
 #### Parameters:
 
-- `table`: A `PgTable` from Drizzle
-- `includeFields`: Array of valid column names
-- `options?`:
-  - `where`: A single or array of `SQL` conditions
-  - `orderBy`: A single or array of `SQL` expressions
-  - `pagination`: `{ limit?: number; offset?: number }`
+| Name                 | Type                                    | Description                          |
+| -------------------- | --------------------------------------- | ------------------------------------ |
+| `table`              | `PgTable`                               | Drizzle table object                 |
+| `includeFields`      | `Array<keyof InferSelectModel<TTable>>` | Fields to include                    |
+| `options.where`      | `SQL<unknown>` \| `SQL<unknown>[]`      | Optional filter conditions           |
+| `options.orderBy`    | `SQL<unknown>` \| `SQL<unknown>[]`      | Optional order expressions           |
+| `options.groupBy`    | `SQL<unknown>` \| `SQL<unknown>[]`      | Optional group expressions           |
+| `options.pagination` | `{ limit?: number; offset?: number }`   | Optional pagination (default: 25, 0) |
 
 ---
 
 ### `selectExcept(table, excludeFields, options?)`
 
-Returns all columns **except** the excluded ones.
+Returns records with **all columns except** the excluded ones.
 
 #### Parameters:
 
-Same as `selectOnly`, but use `excludeFields`.
+Same as `selectOnly`, but provide `excludeFields` instead of `includeFields`.
 
 ---
 
 ### `getCount(table, options?)`
 
-Returns the number of rows matching optional conditions.
+Returns the total number of rows matching the given conditions.
 
 #### Parameters:
 
-- `where`: A single or array of `SQL` conditions
-- `orderBy`: Optional order to apply
+| Name              | Type                               | Description                 |
+| ----------------- | ---------------------------------- | --------------------------- |
+| `table`           | `PgTable`                          | Drizzle table               |
+| `options.where`   | `SQL<unknown>` \| `SQL<unknown>[]` | Optional filters            |
+| `options.orderBy` | `SQL<unknown>` \| `SQL<unknown>[]` | Optional sorting (optional) |
 
 ---
 
-## 🧪 Example with Complex Conditions
+## 🧪 Advanced Example
 
 ```ts
-import { and, eq, isNotNull } from "drizzle-orm";
+import { and, eq, isNotNull, asc } from "drizzle-orm";
 
 const results = await selectOnly(usersTable, ["id", "email"], {
   where: [eq(usersTable.name, "Bob"), isNotNull(usersTable.emailVerified)],
   orderBy: asc(usersTable.createdAt),
-  pagination: { limit: 10 },
+  pagination: { limit: 10, offset: 0 },
 });
 ```
 
@@ -165,14 +174,16 @@ const results = await selectOnly(usersTable, ["id", "email"], {
 
 ## 🛡️ Validations & Safeguards
 
-✅ Type-safe column validation  
-✅ Converts `camelCase` → `snake_case` in sorting  
-❌ Throws on invalid or duplicate fields  
-❌ Skips special Drizzle internal `_` fields
+✅ Type-safe column validation
+✅ Prevents invalid or duplicate fields
+✅ Ignores Drizzle-internal `_` metadata fields
+✅ Supports complex SQL conditions
+❌ Throws on invalid field names
+❌ Throws on duplicates
 
 ---
 
-## 🧑‍💻 Author
+## 👤 Author
 
 Made with 💡 by [Marian Pidchashyi](https://github.com/Marian1309)
 
@@ -180,4 +191,4 @@ Made with 💡 by [Marian Pidchashyi](https://github.com/Marian1309)
 
 ## 📄 License
 
-MIT © [Marian Pidchashyi](https://github.com/Marian1309)
+MIT © [Marian Pidchashyi](https://github.com/Marian1309/LICENCE)
