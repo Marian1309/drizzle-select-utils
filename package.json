@@ -1,26 +1,7 @@
 {
   "name": "drizzle-select-utils",
-  "version": "3.6.0",
+  "version": "3.8.0",
   "description": "Reusable utilities for convenient extraction of fields using Drizzle ORM and Postgres",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "default": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist",
-    "README.md"
-  ],
-  "scripts": {
-    "build": "tsc",
-    "prepublishOnly": "npm run build"
-  },
   "keywords": [
     "drizzle",
     "orm",
@@ -32,14 +13,35 @@
     "type": "git",
     "url": "https://github.com/Marian1309/drizzle-select-utils"
   },
-  "author": "Marian Pidchashyi",
   "license": "MIT",
-  "devDependencies": {
-    "@types/node": "^24.0.2",
-    "typescript": "^5.0.0"
+  "author": "Marian Pidchashyi",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "postpublish": "rimraf -rf dist"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.2",
     "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.2",
+    "typescript": "^5.0.0"
   }
 }
