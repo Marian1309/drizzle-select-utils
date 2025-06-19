@@ -1,4 +1,4 @@
-# `@pidchashyi/drizzle-select-utils`
+# `drizzle-select-utils`
 
 > 🧩 Type-safe field selection utilities for [Drizzle ORM](https://orm.drizzle.team) — A comprehensive collection of utilities for efficient database operations.
 
@@ -27,7 +27,7 @@ export const db = drizzle(queryClient);
 
 ```ts
 // @/utils/selector-utils.ts
-import createSelectorUtils from "@pidchashyi/drizzle-select-utils";
+import createSelectorUtils from "drizzle-select-utils";
 import { db } from "@/config/db";
 
 export const {
