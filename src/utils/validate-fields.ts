@@ -9,6 +9,7 @@ const validateFields = <T extends PgTable>(
   const duplicates = fields.filter(
     (field, index) => fields.indexOf(field) !== index
   );
+
   if (duplicates.length > 0) {
     throw new Error(
       `Duplicate fields found in ${operation} operation: ${duplicates.join(
@@ -20,6 +21,7 @@ const validateFields = <T extends PgTable>(
   const invalidFields = fields.filter(
     (field) => !(field in table) || field === "_"
   );
+
   if (invalidFields.length > 0) {
     throw new Error(
       `Invalid fields for table: ${invalidFields.join(", ")}. ` +

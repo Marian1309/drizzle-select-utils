@@ -30,16 +30,8 @@ export const db = drizzle(queryClient);
 import createSelectorUtils from "drizzle-select-utils";
 import { db } from "@/config/db";
 
-export const {
-  selectOnly,
-  selectExcept,
-  selectAll,
-  selectOne,
-  getCount,
-  exists,
-  pluck,
-  selectRaw,
-} = createSelectorUtils(db);
+export const { selectOnly, selectExcept, getCount, doesExist } =
+  createSelectorUtils(db);
 ```
 
 ---
@@ -81,7 +73,8 @@ Select **only** the fields you need from a table.
 ```ts
 import { eq } from "drizzle-orm";
 
-const users = await selectOnly(usersTable, ["id", "email"], {
+const users = await selectOnly(usersTable, {
+  fields: ["id", "email"],
   where: eq(usersTable.name, "Alice"),
   orderBy: usersTable.createdAt,
   pagination: { limit: 5, offset: 0 },
@@ -93,38 +86,13 @@ const users = await selectOnly(usersTable, ["id", "email"], {
 Omit unwanted or sensitive fields easily.
 
 ```ts
-const users = await selectExcept(
-  usersTable,
-  ["passwordHash", "emailVerified"],
-  {
-    pagination: { limit: 10, offset: 0 },
-  }
-);
-```
-
-### 3️⃣ `selectAll`
-
-Retrieve all fields from a table with optional filtering and pagination.
-
-```ts
-const allUsers = await selectAll(usersTable, {
-  where: eq(usersTable.emailVerified, true),
-  orderBy: usersTable.createdAt,
-  pagination: { limit: 25, offset: 0 },
+const users = await selectExcept(usersTable, {
+  fields: ["passwordHash", "emailVerified"],
+  pagination: { limit: 10, offset: 0 },
 });
 ```
 
-### 4️⃣ `selectOne`
-
-Fetch a single record matching the conditions.
-
-```ts
-const user = await selectOne(usersTable, {
-  where: eq(usersTable.email, "user@example.com"),
-});
-```
-
-### 5️⃣ `getCount`
+### 3️⃣ `getCount`
 
 Count rows matching the given conditions.
 
@@ -136,36 +104,16 @@ const count = await getCount(usersTable, {
 });
 ```
 
-### 6️⃣ `exists`
+### 4️⃣ `doesExist`
 
 Check if records matching certain conditions exist.
 
 ```ts
-const hasAdmin = await exists(usersTable, [
-  eq(usersTable.role, "admin"),
-  eq(usersTable.isActive, true),
-]);
-```
+import { eq } from "drizzle-orm";
 
-### 7️⃣ `pluck`
-
-Extract a single field from matching records.
-
-```ts
-const emails = await pluck(usersTable, "email", {
-  where: eq(usersTable.isActive, true),
-  orderBy: usersTable.createdAt,
+const hasAdmin = await doesExist(usersTable, {
+  where: eq(usersTable.role, "admin"),
 });
-```
-
-### 8️⃣ `selectRaw`
-
-Execute raw SQL queries when needed.
-
-```ts
-import { sql } from "drizzle-orm";
-
-const results = await selectRaw(sql`SELECT COUNT(*) FROM users GROUP BY role`);
 ```
 
 ---
@@ -186,49 +134,45 @@ type QueryOptions<T extends PgTable> = {
   orderBy?: SQL<unknown> | SQL<unknown>[];
   groupBy?: SQL<unknown> | SQL<unknown>[];
 };
+
+// For selectOnly
+type SelectOptions<
+  T extends PgTable,
+  K extends Readonly<(keyof InferSelectModel<T>)[]>
+> = QueryOptions<T> & {
+  fields: K;
+};
+
+// For selectExcept
+type ExcludeOptions<
+  T extends PgTable,
+  K extends Readonly<(keyof InferSelectModel<T>)[]>
+> = QueryOptions<T> & {
+  fields: K;
+};
 ```
 
 ### Method Signatures
 
-#### `selectOnly<TTable, TFields>(table, includeFields, options?)`
+#### `selectOnly<TTable, TFields>(table, options)`
 
 - Returns: `Promise<Array<Pick<InferSelectModel<TTable>, TFields[number]>>>`
 - Default pagination: `{ limit: 25, offset: 0 }`
 
-#### `selectExcept<TTable, TFields>(table, excludeFields, options?)`
+#### `selectExcept<TTable, TFields>(table, options)`
 
 - Returns: `Promise<Array<Omit<InferSelectModel<TTable>, TFields[number]>>>`
 - Default pagination: `{ limit: 10, offset: 0 }`
-
-#### `selectAll<TTable>(table, options?)`
-
-- Returns: `Promise<Array<InferSelectModel<TTable>>>`
-- Default pagination: `{ limit: 25, offset: 0 }`
-
-#### `selectOne<TTable>(table, options)`
-
-- Returns: `Promise<InferSelectModel<TTable> | undefined>`
-- Always uses `limit: 1`
 
 #### `getCount<TTable>(table, options?)`
 
 - Returns: `Promise<number>`
 - Excludes pagination options
 
-#### `exists<TTable>(table, where)`
+#### `doesExist<TTable>(table, options)`
 
 - Returns: `Promise<boolean>`
 - Requires where conditions
-
-#### `pluck<TTable, K>(table, field, options?)`
-
-- Returns: `Promise<Array<InferSelectModel<TTable>[K]>>`
-- Extracts single field values
-
-#### `selectRaw<TResult>(rawSql)`
-
-- Returns: `Promise<TResult[]>`
-- Executes raw SQL queries
 
 ---
 
@@ -248,41 +192,29 @@ type QueryOptions<T extends PgTable> = {
 ## 🧪 Advanced Example
 
 ```ts
-import { and, eq, isNotNull, asc } from "drizzle-orm";
+import { eq, isNotNull, desc } from "drizzle-orm";
 
-// Complex query with multiple conditions
-const results = await selectOnly(usersTable, ["id", "email", "role"], {
-  where: [
-    eq(usersTable.isActive, true),
-    isNotNull(usersTable.emailVerified),
-    sql`${usersTable.lastLogin} > NOW() - INTERVAL '30 days'`,
-  ],
-  orderBy: [asc(usersTable.role), desc(usersTable.lastLogin)],
-  groupBy: [usersTable.role],
-  pagination: { limit: 10, offset: 0 },
+// Fetch active users with pagination and sorting
+const activeUsers = await selectOnly(usersTable, {
+  fields: ["id", "name", "email", "createdAt"],
+  where: [eq(usersTable.isActive, true), isNotNull(usersTable.emailVerified)],
+  orderBy: desc(usersTable.createdAt),
+  pagination: { limit: 20, offset: 40 },
 });
 
-// Checking existence with multiple conditions
-const hasRecentAdmin = await exists(usersTable, [
-  eq(usersTable.role, "admin"),
-  sql`${usersTable.lastLogin} > NOW() - INTERVAL '24 hours'`,
-]);
+// Check if premium users exist
+const hasPremiumUsers = await doesExist(usersTable, {
+  where: eq(usersTable.plan, "premium"),
+});
 
-// Extracting specific fields with filtering
-const activeUserEmails = await pluck(usersTable, "email", {
-  where: eq(usersTable.isActive, true),
-  orderBy: usersTable.createdAt,
+// Get count of verified users
+const verifiedCount = await getCount(usersTable, {
+  where: isNotNull(usersTable.emailVerified),
 });
 ```
 
 ---
 
-## 👤 Author
-
-Made with 💡 by [Marian Pidchashyi](https://github.com/Marian1309)
-
----
-
 ## 📄 License
 
-MIT © [LICENCE](https://github.com/Marian1309/drizzle-select-utils/blob/main/LICENSE)
+MIT © [Marian Pidchashyi](https://github.com/Marian1309/drizzle-select-utils)
